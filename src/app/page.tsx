@@ -40,7 +40,7 @@ export default function Home() {
   const handleJoinWorkspace = async (workspaceId: Id<"workspaces">) => {
     try {
       const workspace = await joinWorkspace({
-        joinCode,
+        joinCode: joinCode.toUpperCase(),
         workspaceId,
       });
       if (workspace) {
