@@ -1,0 +1,35 @@
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import { Id } from "../../../../convex/_generated/dataModel";
+
+export const useGetChannels = (workspaceId: Id<"workspaces">) => {
+  const getChannels = useQuery(api.channels.getChannels, { workspaceId });
+  return getChannels;
+};
+
+export const useGetChannel = (channelId: Id<"channels">) => {
+  const getChannel = useQuery(api.channels.getChannel, { channelId });
+  return getChannel;
+};
+
+export const useCreateChannel = () => {
+  const createChannel = useMutation(api.channels.createChannel);
+  return createChannel;
+};
+
+export const useGetMessages = (channelId: Id<"channels">) => {
+  const getMessages = useQuery(api.channels.getMessages, { channelId });
+  return getMessages;
+};
+
+export const useSendMessage = () => {
+  const sendMessage = useMutation(api.channels.sendMessage);
+  return sendMessage;
+};
+
+export const useGetChannelMembers = (channelId: Id<"channels">) => {
+  const getChannelMembers = useQuery(api.channels.getChannelMembers, {
+    channelId,
+  });
+  return getChannelMembers;
+};
