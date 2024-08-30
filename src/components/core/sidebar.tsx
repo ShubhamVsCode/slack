@@ -1,7 +1,7 @@
 "use client";
 import { useGetWorkspace } from "@/features/workspaces/api/actions";
-import MainSidebar from "@/features/channels/components/main-sidebar";
 import { useGetWorkspaceId } from "@/features/workspaces/hooks/workspace";
+import MainSidebar from "@/features/channels/components/main-sidebar";
 
 const Sidebar = () => {
   const workspaceId = useGetWorkspaceId();
