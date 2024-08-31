@@ -57,7 +57,7 @@ const ManageChannel = ({
   };
 
   const handleInviteMember = async () => {
-    const inviteLink = `${window.location.origin}/join-workspace/${workspaceId}?joinCode=${workspace?.joinCode}`;
+    const inviteLink = `${window.location.origin}?workspaceId=${workspaceId}&joinCode=${workspace?.joinCode}`;
     try {
       const inviteMemberResponse = await sendInviteMemberEmail(
         inviteMemberEmail,
