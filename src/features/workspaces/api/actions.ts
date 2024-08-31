@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
+import { sendInviteMemberEmail } from "@/lib/email";
 
 export const useCreateWorkspace = () => {
   const createWorkspace = useMutation(api.workspaces.createWorkspace);

@@ -27,6 +27,11 @@ import { Id } from "../../../../convex/_generated/dataModel";
 import dayjs from "dayjs";
 import { useGetChannel } from "../api/actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { sendInviteMemberEmail } from "@/lib/email";
+import { useGetWorkspaceId } from "@/features/workspaces/hooks/workspace";
+import { useGetWorkspace } from "@/features/workspaces/api/actions";
+import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
+import { toast } from "sonner";
 
 const ManageChannel = ({
   channelId,
@@ -37,8 +42,11 @@ const ManageChannel = ({
   open: boolean;
   setOpen: (open: boolean) => void;
 }) => {
+  const user = useCurrentUser();
+  const workspaceId = useGetWorkspaceId();
+  const workspace = useGetWorkspace({ workspaceId });
   const channel = useGetChannel(channelId);
-  const [newMember, setNewMember] = useState("");
+  const [inviteMemberEmail, setInviteMemberEmail] = useState("");
 
   const handleLeaveChannel = () => {
     setOpen(false);
@@ -46,6 +54,21 @@ const ManageChannel = ({
 
   const handleDeleteChannel = () => {
     setOpen(false);
+  };
+
+  const handleInviteMember = async () => {
+    const inviteLink = `${window.location.origin}/join-workspace/${workspaceId}?joinCode=${workspace?.joinCode}`;
+    try {
+      const inviteMemberResponse = await sendInviteMemberEmail(
+        inviteMemberEmail,
+        workspace?.name || "",
+        user?.name || "",
+        inviteLink,
+      );
+      toast.success("Invited member to the channel");
+    } catch (error: any) {
+      toast.error(error.message);
+    }
   };
 
   if (!channel) return null;
@@ -107,6 +130,15 @@ const ManageChannel = ({
               <div className="border rounded-md py-2">
                 <div className="px-5 py-2">
                   <h4 className="font-medium">Members</h4>
+                  <div className="flex items-center gap-2 my-1">
+                    <Input
+                      value={inviteMemberEmail}
+                      onChange={(e) => setInviteMemberEmail(e.target.value)}
+                      placeholder="Enter the member email"
+                    />
+                    <Button onClick={handleInviteMember}>Invite Member</Button>
+                  </div>
+
                   <ul>
                     {channel.members?.map((member) => (
                       <li

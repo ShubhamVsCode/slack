@@ -6,7 +6,7 @@ import {
 } from "@/features/workspaces/api/actions";
 import { useGetChannels } from "@/features/channels/api/actions";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -37,6 +37,10 @@ export default function Home() {
   const workspaces = useGetWorkspaces();
   const workspaceId = useGetWorkspaceId();
 
+  const searchParams = useSearchParams();
+  const paramJoinCode = searchParams.get("joinCode");
+  const paramWorkspaceId = searchParams.get("workspaceId");
+
   const handleJoinWorkspace = async (workspaceId: Id<"workspaces">) => {
     try {
       const workspace = await joinWorkspace({
@@ -60,6 +64,13 @@ export default function Home() {
       router.push(`/workspace/${workspaces[0]._id}`);
     }
   }, [router, workspaceId, workspaces]);
+
+  useEffect(() => {
+    if (paramJoinCode && paramWorkspaceId) {
+      setJoinCode(paramJoinCode);
+      handleJoinWorkspace(paramWorkspaceId as Id<"workspaces">);
+    }
+  }, [paramJoinCode, paramWorkspaceId]);
 
   if (!workspaces?.length) {
     return (
