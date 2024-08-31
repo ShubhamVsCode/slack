@@ -59,12 +59,13 @@ const ManageChannel = ({
   const handleInviteMember = async () => {
     const inviteLink = `${window.location.origin}?workspaceId=${workspaceId}&joinCode=${workspace?.joinCode}`;
     try {
-      const inviteMemberResponse = await sendInviteMemberEmail(
-        inviteMemberEmail,
-        workspace?.name || "",
-        user?.name || "",
-        inviteLink,
-      );
+      console.log(inviteLink);
+      //   const inviteMemberResponse = await sendInviteMemberEmail(
+      //     inviteMemberEmail,
+      //     workspace?.name || "",
+      //     user?.name || "",
+      //     inviteLink,
+      //   );
       toast.success("Invited member to the channel");
     } catch (error: any) {
       toast.error(error.message);

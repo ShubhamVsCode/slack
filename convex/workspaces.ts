@@ -118,6 +118,17 @@ export const joinWorkspace = mutation({
       throw new ConvexError("Invalid join code");
     }
 
+    const alreadyMember = await ctx.db
+      .query("members")
+      .withIndex("by_workspace_id_and_user_id", (q) =>
+        q.eq("workspaceId", args.workspaceId).eq("userId", userId),
+      )
+      .unique();
+
+    if (alreadyMember) {
+      throw new ConvexError("Already a member of this workspace");
+    }
+
     const memberId = await ctx.db.insert("members", {
       userId: userId,
       workspaceId: workspace._id,
@@ -131,7 +142,7 @@ export const joinWorkspace = mutation({
 
     for (const channel of channels) {
       await ctx.db.patch(channel._id, {
-        members: [...channel.members, memberId],
+        members: [...channel.members],
       });
     }
 

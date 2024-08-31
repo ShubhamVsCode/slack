@@ -41,7 +41,10 @@ export default function Home() {
   const paramJoinCode = searchParams.get("joinCode");
   const paramWorkspaceId = searchParams.get("workspaceId");
 
-  const handleJoinWorkspace = async (workspaceId: Id<"workspaces">) => {
+  const handleJoinWorkspace = async (
+    workspaceId: Id<"workspaces">,
+    joinCode: string,
+  ) => {
     try {
       const workspace = await joinWorkspace({
         joinCode: joinCode.toUpperCase(),
@@ -68,7 +71,7 @@ export default function Home() {
   useEffect(() => {
     if (paramJoinCode && paramWorkspaceId) {
       setJoinCode(paramJoinCode);
-      handleJoinWorkspace(paramWorkspaceId as Id<"workspaces">);
+      handleJoinWorkspace(paramWorkspaceId as Id<"workspaces">, paramJoinCode);
     }
   }, [paramJoinCode, paramWorkspaceId]);
 
@@ -120,7 +123,7 @@ export default function Home() {
                   </InputOTP>
 
                   <Button
-                    onClick={() => handleJoinWorkspace(workspace._id)}
+                    onClick={() => handleJoinWorkspace(workspace._id, joinCode)}
                     size={"lg"}
                     className="h-12"
                   >
