@@ -39,7 +39,7 @@ const CreateChannel = () => {
     });
     if (channelId) {
       toast.success("Channel created successfully");
-      router.push(`/workspace/${workspaceId}/channels/${channelId}`);
+      router.push(`/workspace/${workspaceId}/channel/${channelId}`);
     } else {
       toast.error("Failed to create channel");
     }
