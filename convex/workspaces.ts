@@ -40,60 +40,75 @@ export const getWorkspace = query({
     workspaceId: v.id("workspaces"),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new ConvexError("Not authenticated");
+    try {
+      const userId = await getAuthUserId(ctx);
+      if (!userId) {
+        return null;
+      }
+
+      const member = await ctx.db
+        .query("members")
+        .withIndex("by_workspace_id_and_user_id", (q) =>
+          q.eq("workspaceId", args.workspaceId).eq("userId", userId),
+        )
+        .unique();
+
+      if (!member) {
+        return null;
+      }
+
+      return await ctx.db.get(args.workspaceId);
+    } catch (error) {
+      console.error("Error in getWorkspace:", error);
+      return null;
     }
-
-    const member = await ctx.db
-      .query("members")
-      .withIndex("by_workspace_id_and_user_id", (q) =>
-        q.eq("workspaceId", args.workspaceId).eq("userId", userId),
-      )
-      .unique();
-
-    if (!member) {
-      throw new ConvexError("Not a member of this workspace");
-    }
-
-    return await ctx.db.get(args.workspaceId);
   },
 });
 
 export const getWorkspaces = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new ConvexError("Not authenticated");
-    }
-    const memberWorkspaces = await ctx.db
-      .query("members")
-      .filter((q) => q.eq(q.field("userId"), userId))
-      .collect();
-
-    const workspaceIds = memberWorkspaces.map((member) => member.workspaceId);
-
-    const workspaces = [];
-
-    for (const workspaceId of workspaceIds) {
-      const workspace = await ctx.db
-        .query("workspaces")
-        .filter((q) => q.eq(q.field("_id"), workspaceId))
-        .first();
-      if (workspace) {
-        workspaces.push(workspace);
+    try {
+      const userId = await getAuthUserId(ctx);
+      if (!userId) {
+        return null;
       }
-    }
+      const memberWorkspaces = await ctx.db
+        .query("members")
+        .filter((q) => q.eq(q.field("userId"), userId))
+        .collect();
 
-    return workspaces;
+      const workspaceIds = memberWorkspaces.map((member) => member.workspaceId);
+
+      const workspaces = [];
+
+      for (const workspaceId of workspaceIds) {
+        const workspace = await ctx.db
+          .query("workspaces")
+          .filter((q) => q.eq(q.field("_id"), workspaceId))
+          .first();
+        if (workspace) {
+          workspaces.push(workspace);
+        }
+      }
+
+      return workspaces;
+    } catch (error) {
+      console.error("Error in getWorkspaces:", error);
+      return null;
+    }
   },
 });
 
 export const getAllWorkspaces = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("workspaces").collect();
+    try {
+      return await ctx.db.query("workspaces").collect();
+    } catch (error) {
+      console.error("Error in getAllWorkspaces:", error);
+      return null;
+    }
   },
 });
 

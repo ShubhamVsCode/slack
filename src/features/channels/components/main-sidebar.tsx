@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Doc, Id } from "../../../../convex/_generated/dataModel";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -9,10 +9,16 @@ import UserButton from "@/features/auth/components/user-button";
 import CreateChannel from "./create-channel";
 import { useGetChannels } from "../api/actions";
 import Link from "next/link";
-import { useGetWorkspace } from "@/features/workspaces/api/actions";
+import {
+  useGetWorkspace,
+  useGetWorkspaces,
+} from "@/features/workspaces/api/actions";
 import { useGetWorkspaceId } from "@/features/workspaces/hooks/workspace";
+import { useRouter } from "next/navigation";
 
 const MainSidebar = () => {
+  const router = useRouter();
+  const workspaces = useGetWorkspaces();
   const workspaceId = useGetWorkspaceId();
   const workspace = useGetWorkspace({ workspaceId });
   const channels = useGetChannels(workspaceId);
@@ -20,6 +26,16 @@ const MainSidebar = () => {
     null,
   );
   const [directMessages, setDirectMessages] = useState<Doc<"users">[]>([]);
+
+  useEffect(() => {
+    if (!workspace && workspace !== undefined) {
+      if (workspaces?.length === 0) {
+        router.push("/");
+      } else {
+        router.push(`/workspace/${workspaces?.[0]?._id}`);
+      }
+    }
+  }, [workspace, workspaces, router]);
 
   return (
     <div className="w-64 bg-zinc-900 flex flex-col">

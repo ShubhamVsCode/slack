@@ -51,9 +51,20 @@ export const getChannels = query({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("Not authenticated");
+      return null;
     }
     const { workspaceId } = args;
+
+    const member = await ctx.db
+      .query("members")
+      .withIndex("by_workspace_id_and_user_id", (q) =>
+        q.eq("workspaceId", workspaceId).eq("userId", userId),
+      )
+      .unique();
+
+    if (!member) {
+      return null;
+    }
 
     const channels = await ctx.db
       .query("channels")
@@ -70,14 +81,14 @@ export const getChannel = query({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("Not authenticated");
+      return null;
     }
 
     const { channelId } = args;
 
     const channel = await ctx.db.get(channelId);
     if (!channel) {
-      throw new ConvexError("Channel not found");
+      return null;
     }
 
     const createdBy = await ctx.db.get(channel.createdBy);
@@ -100,7 +111,7 @@ export const getMessages = query({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("Not authenticated");
+      return null;
     }
     const { channelId } = args;
     const messages = await ctx.db
@@ -154,7 +165,7 @@ export const getChannelMembers = query({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("Not authenticated");
+      return null;
     }
 
     const { channelId } = args;
@@ -164,7 +175,7 @@ export const getChannelMembers = query({
       .unique();
 
     if (!channel) {
-      throw new ConvexError("Channel not found");
+      return null;
     }
 
     const memberIds = channel.members;
