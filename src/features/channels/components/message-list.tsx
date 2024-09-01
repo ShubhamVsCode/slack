@@ -30,7 +30,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   }, [messages]);
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto mt-2">
       {messages.reduce((acc, message, index, array) => {
         const prevMessage = index > 0 ? array[index - 1] : null;
         const isSameUser =
