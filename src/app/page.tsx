@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import CreateWorkspaceDialog from "@/features/workspaces/components/create-workspace";
 import { useGetWorkspaceId } from "@/features/workspaces/hooks/workspace";
 import { Id } from "../../convex/_generated/dataModel";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function Home() {
   const router = useRouter();
@@ -33,6 +34,7 @@ export default function Home() {
   const allWorkspaces = useGetAllWorkspaces();
   const joinWorkspace = useJoinWorkspace();
   const [joinCode, setJoinCode] = useState("");
+  const [activeWorkspace, setActiveWorkspace] = useState<string | null>(null);
 
   const workspaces = useGetWorkspaces();
   const workspaceId = useGetWorkspaceId();
@@ -92,47 +94,59 @@ export default function Home() {
           <div className="flex justify-center">
             <CreateWorkspaceDialog />
           </div>
-          {allWorkspaces?.map((workspace) => (
-            <Card key={workspace._id} className="w-full">
-              <CardHeader>
-                <CardTitle>{workspace.name}</CardTitle>
-                <CardDescription>{workspace.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex space-x-2 items-center justify-between">
-                  <InputOTP
-                    maxLength={6}
-                    pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
-                    className="text-2xl"
-                    value={joinCode}
-                    onChange={(value) => {
-                      setJoinCode(value);
-                    }}
-                  >
-                    <InputOTPGroup>
-                      <InputOTPSlot className="w-10 h-12" index={0} />
-                      <InputOTPSlot className="w-10 h-12" index={1} />
-                      <InputOTPSlot className="w-10 h-12" index={2} />
-                    </InputOTPGroup>
-                    <InputOTPSeparator />
-                    <InputOTPGroup>
-                      <InputOTPSlot className="w-10 h-12" index={3} />
-                      <InputOTPSlot className="w-10 h-12" index={4} />
-                      <InputOTPSlot className="w-10 h-12" index={5} />
-                    </InputOTPGroup>
-                  </InputOTP>
+          <ScrollArea className="h-[500px]">
+            <div className="flex flex-col gap-4">
+              {allWorkspaces?.map((workspace) => (
+                <Card key={workspace._id} className="w-full">
+                  <CardHeader>
+                    <CardTitle>{workspace.name}</CardTitle>
+                    <CardDescription>{workspace.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex space-x-2 items-center justify-between">
+                      {activeWorkspace === workspace._id ? (
+                        <InputOTP
+                          maxLength={6}
+                          pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
+                          className="text-2xl"
+                          value={joinCode}
+                          onChange={(value) => {
+                            setJoinCode(value);
+                          }}
+                        >
+                          <InputOTPGroup>
+                            <InputOTPSlot className="w-10 h-12" index={0} />
+                            <InputOTPSlot className="w-10 h-12" index={1} />
+                            <InputOTPSlot className="w-10 h-12" index={2} />
+                          </InputOTPGroup>
+                          <InputOTPSeparator />
+                          <InputOTPGroup>
+                            <InputOTPSlot className="w-10 h-12" index={3} />
+                            <InputOTPSlot className="w-10 h-12" index={4} />
+                            <InputOTPSlot className="w-10 h-12" index={5} />
+                          </InputOTPGroup>
+                        </InputOTP>
+                      ) : null}
 
-                  <Button
-                    onClick={() => handleJoinWorkspace(workspace._id, joinCode)}
-                    size={"lg"}
-                    className="h-12"
-                  >
-                    Join
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                      <Button
+                        onClick={() => {
+                          if (activeWorkspace === workspace._id) {
+                            handleJoinWorkspace(workspace._id, joinCode);
+                          } else {
+                            setActiveWorkspace(workspace._id);
+                          }
+                        }}
+                        size={"lg"}
+                        className="h-12"
+                      >
+                        {activeWorkspace === workspace._id ? "Submit" : "Join"}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </ScrollArea>
         </div>
       </div>
     );
