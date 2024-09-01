@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useGetChannel, useGetMessages, useSendMessage } from "../api/actions";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { MessageList } from "./message-list";
-import { MessageInput } from "./message-input";
+import MessageEditor from "./message-input";
 import { ChannelHeader } from "./channel-header";
 import { MembersList } from "./member-list";
 import ManageChannel from "./manage-channel";
@@ -24,9 +24,7 @@ const ChannelPage = ({ channelId }: { channelId: Id<"channels"> }) => {
         <div className="flex-1 flex flex-col">
           <MessageList messages={messages || []} />
           <ManageChannel channelId={channelId} open={open} setOpen={setOpen} />
-          <MessageInput
-            onSendMessage={(text) => sendMessage({ channelId, text })}
-          />
+          <MessageEditor onSend={(text) => sendMessage({ channelId, text })} />
         </div>
       </div>
     </div>

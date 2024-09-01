@@ -10,6 +10,7 @@ import { MessageInput } from "@/features/users/components/message-input";
 import { UserHeader } from "@/features/users/components/user-header";
 import UserProfile from "./user-profile";
 import { useGetWorkspaceId } from "@/features/workspaces/hooks/workspace";
+import MessageEditor from "@/features/channels/components/message-input";
 
 const UserPage = ({ userId }: { userId: Id<"users"> }) => {
   const workspaceId = useGetWorkspaceId();
@@ -22,7 +23,8 @@ const UserPage = ({ userId }: { userId: Id<"users"> }) => {
     <div className="flex flex-col h-screen flex-1">
       <UserHeader
         name={user?.name || ""}
-        // status={user?.status || ""}
+        image={user?.image || ""}
+        lastSeen={user?.lastSeen || 0}
         onClick={() => setOpen((prev) => !prev)}
       />
       <div className="flex flex-1 overflow-hidden">
@@ -30,8 +32,8 @@ const UserPage = ({ userId }: { userId: Id<"users"> }) => {
           {/* @ts-ignore */}
           <MessageList messages={messages || []} />
           <UserProfile userId={userId} open={open} setOpen={setOpen} />
-          <MessageInput
-            onSendMessage={(text: string) =>
+          <MessageEditor
+            onSend={(text: string) =>
               sendMessage({
                 workspaceId,
                 recipientId: userId,

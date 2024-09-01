@@ -1,0 +1,31 @@
+.tiptap {
+  min-height: 100px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Webkit browsers (Chrome, Safari, newer versions of Edge) */
+.tiptap::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tiptap::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tiptap::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.tiptap::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Firefox */
+.tiptap {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(167, 167, 167, 0.2) transparent;
+}

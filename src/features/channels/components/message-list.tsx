@@ -57,7 +57,10 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
                       {dayjs(message._creationTime).format("HH:mm")}
                     </span>
                   </div>
-                  <div>{message.content}</div>
+                  <div
+                    dangerouslySetInnerHTML={{ __html: message.content }}
+                    className="prose dark:prose-invert prose-sm max-w-none"
+                  />
                 </div>
               </div>
             </div>,
@@ -68,7 +71,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
               key={message._id}
               className="pl-[52px] text-sm trasition-all hover:bg-zinc-800 p-1"
             >
-              {message.content}
+              <MessageContent content={message.content} />
             </div>,
           );
         }
@@ -77,5 +80,14 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
       }, [] as React.ReactNode[])}
       <div ref={messagesEndRef} />
     </ScrollArea>
+  );
+};
+
+export const MessageContent: React.FC<{ content: string }> = ({ content }) => {
+  return (
+    <div
+      dangerouslySetInnerHTML={{ __html: content }}
+      className="prose dark:prose-invert prose-sm max-w-none prose-p:m-0 prose-ul:m-0 prose-ol:m-0 prose-li:m-0 prose-blockquote:m-0 prose-a:text-blue-400 prose-a:text-sm prose-a:font-medium prose-a:no-underline prose-a:hover:underline"
+    />
   );
 };

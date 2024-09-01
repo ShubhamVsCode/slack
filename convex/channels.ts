@@ -148,6 +148,9 @@ export const sendMessage = mutation({
     }
 
     const { channelId, text } = args;
+    if (!text) {
+      return null;
+    }
     const message = await ctx.db.insert("messages", {
       channelId,
       content: text,

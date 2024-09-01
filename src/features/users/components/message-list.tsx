@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import dayjs from "dayjs";
 import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { MessageContent } from "@/features/channels/components/message-list";
 
 interface MessageListProps {
   messages: {
@@ -69,7 +70,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
                       {dayjs(message._creationTime).format("HH:mm")}
                     </span>
                   </div>
-                  <div>{message.content}</div>
+                  <MessageContent content={message.content} />
                 </div>
               </div>
             </div>
@@ -80,7 +81,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
               key={message._id}
               className="pl-[52px] text-sm transition-all hover:bg-zinc-800 p-1"
             >
-              {message.content}
+              <MessageContent content={message.content} />
             </div>
           );
         }

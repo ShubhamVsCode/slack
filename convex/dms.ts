@@ -18,7 +18,10 @@ export const getUser = query({
       .withIndex("by_user_id", (q) => q.eq("userId", args.userId))
       .first();
 
-    return { ...(await ctx.db.get(args.userId)), onlineStatus };
+    return {
+      ...(await ctx.db.get(args.userId)),
+      lastSeen: onlineStatus?.lastSeen,
+    };
   },
 });
 
