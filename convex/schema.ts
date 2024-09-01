@@ -48,6 +48,11 @@ const memberTable = defineTable({
   .index("by_user_id", ["userId"])
   .index("by_workspace_id_and_user_id", ["workspaceId", "userId"]);
 
+const onlineStatusTable = defineTable({
+  userId: v.id("users"),
+  lastSeen: v.number(),
+}).index("by_user_id", ["userId"]);
+
 const schema = defineSchema({
   ...authTables,
   workspaces: workspaceTable,
@@ -55,6 +60,7 @@ const schema = defineSchema({
   channels: channelTable,
   messages: messageTable,
   directMessages: directMessageTable,
+  onlineStatus: onlineStatusTable,
 });
 
 export default schema;

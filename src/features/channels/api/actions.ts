@@ -33,3 +33,13 @@ export const useGetChannelMembers = (channelId: Id<"channels">) => {
   });
   return getChannelMembers;
 };
+
+export const useGetOnlineStatus = () => {
+  const getOnlineStatus = useQuery(api.users.getOnlineStatus);
+  return getOnlineStatus;
+};
+
+export const useUpdateOnlineStatus = () => {
+  const updateOnlineStatus = useMutation(api.users.updateOnlineStatus);
+  return updateOnlineStatus;
+};

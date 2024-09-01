@@ -3,6 +3,7 @@ import { Id } from "../../../../convex/_generated/dataModel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import dayjs from "dayjs";
 import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface MessageListProps {
   messages: {
@@ -40,7 +41,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   if (!messages) return null;
 
   return (
-    <div className="flex-1 overflow-y-auto mt-2">
+    <ScrollArea className="flex-1 overflow-y-auto mt-2">
       {messages?.reduce((acc, message, index, array) => {
         const prevMessage = index > 0 ? array[index - 1] : null;
         const isSameUser =
@@ -88,6 +89,6 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
         return acc;
       }, [] as React.ReactNode[])}
       <div ref={messagesEndRef} />
-    </div>
+    </ScrollArea>
   );
 };

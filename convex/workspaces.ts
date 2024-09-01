@@ -70,8 +70,12 @@ export const getWorkspace = query({
 
       for (const userId of userIds) {
         const user = await ctx.db.get(userId);
+        const onlineStatus = await ctx.db
+          .query("onlineStatus")
+          .withIndex("by_user_id", (q) => q.eq("userId", userId))
+          .first();
         if (user) {
-          users.push(user);
+          users.push({ ...user, lastSeen: onlineStatus?.lastSeen });
         }
       }
 

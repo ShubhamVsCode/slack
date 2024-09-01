@@ -13,7 +13,12 @@ export const getUser = query({
       return null;
     }
 
-    return await ctx.db.get(args.userId);
+    const onlineStatus = await ctx.db
+      .query("onlineStatus")
+      .withIndex("by_user_id", (q) => q.eq("userId", args.userId))
+      .first();
+
+    return { ...(await ctx.db.get(args.userId)), onlineStatus };
   },
 });
 
