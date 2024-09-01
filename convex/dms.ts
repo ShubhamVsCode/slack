@@ -50,6 +50,68 @@ export const createDirectMessage = mutation({
   },
 });
 
+export const editDirectMessage = mutation({
+  args: {
+    directMessageId: v.id("directMessages"),
+    content: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const { directMessageId, content } = args;
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new ConvexError("Not authenticated");
+    }
+
+    const directMessage = await ctx.db.get(directMessageId);
+    if (!directMessage) {
+      throw new ConvexError("Direct message not found");
+    }
+
+    if (directMessage.sender !== userId) {
+      throw new ConvexError(
+        "You are not authorized to edit this direct message",
+      );
+    }
+
+    await ctx.db.patch(directMessageId, {
+      content,
+      editedAt: Date.now(),
+    });
+
+    return directMessage;
+  },
+});
+
+export const deleteDirectMessage = mutation({
+  args: {
+    directMessageId: v.id("directMessages"),
+  },
+  handler: async (ctx, args) => {
+    const { directMessageId } = args;
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new ConvexError("Not authenticated");
+    }
+
+    const directMessage = await ctx.db.get(directMessageId);
+    if (!directMessage) {
+      throw new ConvexError("Direct message not found");
+    }
+
+    if (directMessage.sender !== userId) {
+      throw new ConvexError(
+        "You are not authorized to delete this direct message",
+      );
+    }
+
+    await ctx.db.patch(directMessageId, {
+      deletedAt: Date.now(),
+    });
+
+    return directMessage;
+  },
+});
+
 export const getDirectMessages = query({
   args: {
     workspaceId: v.id("workspaces"),

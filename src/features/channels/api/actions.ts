@@ -27,6 +27,16 @@ export const useSendMessage = () => {
   return sendMessage;
 };
 
+export const useEditMessage = () => {
+  const editMessage = useMutation(api.channels.editMessage);
+  return editMessage;
+};
+
+export const useDeleteMessage = () => {
+  const deleteMessage = useMutation(api.channels.deleteMessage);
+  return deleteMessage;
+};
+
 export const useGetChannelMembers = (channelId: Id<"channels">) => {
   const getChannelMembers = useQuery(api.channels.getChannelMembers, {
     channelId,

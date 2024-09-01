@@ -26,6 +26,8 @@ const messageTable = defineTable({
   type: v.string(),
   createdBy: v.id("users"),
   channelId: v.id("channels"),
+  editedAt: v.optional(v.number()),
+  deletedAt: v.optional(v.number()),
 });
 
 const directMessageTable = defineTable({
@@ -35,6 +37,8 @@ const directMessageTable = defineTable({
   workspaceId: v.id("workspaces"),
   timestamp: v.number(),
   read: v.boolean(),
+  editedAt: v.optional(v.number()),
+  deletedAt: v.optional(v.number()),
 })
   .index("by_workspace_and_users", ["workspaceId", "sender", "recipient"])
   .index("by_timestamp", ["timestamp"]);

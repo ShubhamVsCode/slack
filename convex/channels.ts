@@ -161,6 +161,64 @@ export const sendMessage = mutation({
   },
 });
 
+export const editMessage = mutation({
+  args: {
+    messageId: v.id("messages"),
+    text: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new ConvexError("Not authenticated");
+    }
+
+    const { messageId, text } = args;
+    const message = await ctx.db.get(messageId);
+    if (!message) {
+      throw new ConvexError("Message not found");
+    }
+
+    if (message.createdBy !== userId) {
+      throw new ConvexError("You are not authorized to edit this message");
+    }
+
+    await ctx.db.patch(messageId, {
+      content: text,
+      editedAt: Date.now(),
+    });
+
+    return message;
+  },
+});
+
+export const deleteMessage = mutation({
+  args: {
+    messageId: v.id("messages"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new ConvexError("Not authenticated");
+    }
+
+    const { messageId } = args;
+    const message = await ctx.db.get(messageId);
+    if (!message) {
+      throw new ConvexError("Message not found");
+    }
+
+    if (message.createdBy !== userId) {
+      throw new ConvexError("You are not authorized to delete this message");
+    }
+
+    await ctx.db.patch(messageId, {
+      deletedAt: Date.now(),
+    });
+
+    return message;
+  },
+});
+
 export const getChannelMembers = query({
   args: {
     channelId: v.id("channels"),

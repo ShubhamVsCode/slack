@@ -24,3 +24,13 @@ export const useSendDirectMessage = () => {
   const sendDirectMessage = useMutation(api.dms.createDirectMessage);
   return sendDirectMessage;
 };
+
+export const useEditDirectMessage = () => {
+  const editDirectMessage = useMutation(api.dms.editDirectMessage);
+  return editDirectMessage;
+};
+
+export const useDeleteDirectMessage = () => {
+  const deleteDirectMessage = useMutation(api.dms.deleteDirectMessage);
+  return deleteDirectMessage;
+};

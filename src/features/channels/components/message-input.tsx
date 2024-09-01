@@ -15,6 +15,7 @@ import {
   ListOrdered,
   Send,
   SendHorizontal,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -94,8 +95,18 @@ const extensions = [
   }),
 ];
 
-const MessageEditor = ({ onSend }: { onSend: (content: string) => void }) => {
-  const [content, setContent] = useState("");
+const MessageEditor = ({
+  onSend,
+  initialContent,
+  isEditing,
+  onCancel,
+}: {
+  onSend: (content: string) => void;
+  initialContent?: string;
+  isEditing?: boolean;
+  onCancel?: () => void;
+}) => {
+  const [content, setContent] = useState(initialContent || "");
   const [hasText, setHasText] = useState(false);
   const [editor, setEditor] = useState<Editor | null>(null);
 
@@ -112,7 +123,7 @@ const MessageEditor = ({ onSend }: { onSend: (content: string) => void }) => {
   };
 
   return (
-    <div className="border rounded-lg shadow-sm mx-2 mb-2">
+    <div className="border bg-background rounded-lg shadow-sm mx-2 mb-2">
       <EditorProvider
         slotBefore={<MenuBar />}
         extensions={extensions}
@@ -131,17 +142,46 @@ const MessageEditor = ({ onSend }: { onSend: (content: string) => void }) => {
         onDestroy={() => setEditor(null)}
       >
         <div className="relative">
-          <Button
-            onClick={handleSend}
-            variant="outline"
-            size={"icon"}
-            className={cn(
-              "absolute bottom-2 right-2",
-              hasText ? "bg-green-700 hover:bg-green-800" : "",
-            )}
-          >
-            <SendHorizontal size={18} />
-          </Button>
+          {isEditing ? (
+            <>
+              <Button
+                onClick={handleSend}
+                variant="outline"
+                className={cn(
+                  "absolute bottom-2 right-2",
+                  hasText ? "bg-green-700 hover:bg-green-800" : "",
+                )}
+              >
+                Save
+              </Button>
+              <Button
+                onClick={() => {
+                  if (editor) {
+                    editor.commands.clearContent();
+                  }
+                  setContent("");
+                  setHasText(false);
+                  onCancel?.();
+                }}
+                variant="outline"
+                className="absolute bottom-2 right-20"
+              >
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={handleSend}
+              variant="outline"
+              size={"icon"}
+              className={cn(
+                "absolute bottom-2 right-2",
+                hasText ? "bg-green-700 hover:bg-green-800" : "",
+              )}
+            >
+              <SendHorizontal size={18} />
+            </Button>
+          )}
         </div>
       </EditorProvider>
     </div>
