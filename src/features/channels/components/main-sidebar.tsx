@@ -37,11 +37,6 @@ const MainSidebar = () => {
   const getOnlineStatus = useGetOnlineStatus();
   const updateOnlineStatus = useUpdateOnlineStatus();
 
-  const [currentChannel, setCurrentChannel] = useState<Doc<"channels"> | null>(
-    null,
-  );
-  const [directMessages, setDirectMessages] = useState<Doc<"users">[]>([]);
-
   useEffect(() => {
     if (!workspace && workspace !== undefined) {
       if (workspaces?.length === 0) {
@@ -54,6 +49,7 @@ const MainSidebar = () => {
 
   useEffect(() => {
     if (currentUser) {
+      updateOnlineStatus();
       setInterval(() => {
         updateOnlineStatus();
       }, 5000);
