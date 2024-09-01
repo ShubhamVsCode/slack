@@ -47,30 +47,42 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
           prevMessage && prevMessage.sender._id === message.sender._id;
         const isCurrentUser = message.sender._id === currentUserId;
 
-        const messageContent = (
-          <div key={message._id} className="hover:bg-zinc-800 px-4 py-1">
-            <div className="flex gap-2 items-start">
-              <Avatar className="w-7 h-7 rounded-lg">
-                <AvatarImage
-                  src={message.sender.image}
-                  alt={message.sender.name}
-                />
-                <AvatarFallback className="uppercase rounded-lg">
-                  {message.sender.name?.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="text-sm">
-                <div className="font-semibold text-gray-500">
-                  {isCurrentUser ? "You" : message.sender.name}{" "}
-                  <span className="font-light text-xs">
-                    {dayjs(message._creationTime).format("HH:mm")}
-                  </span>
+        let messageContent;
+        if (!isSameUser) {
+          messageContent = (
+            <div key={message._id} className="hover:bg-zinc-800 px-4 py-1">
+              <div className="flex gap-2 items-start">
+                <Avatar className="w-7 h-7 rounded-lg">
+                  <AvatarImage
+                    src={message.sender.image}
+                    alt={message.sender.name}
+                  />
+                  <AvatarFallback className="uppercase rounded-lg">
+                    {message.sender.name?.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="text-sm">
+                  <div className="font-semibold text-gray-500">
+                    {isCurrentUser ? "You" : message.sender.name}{" "}
+                    <span className="font-light text-xs">
+                      {dayjs(message._creationTime).format("HH:mm")}
+                    </span>
+                  </div>
+                  <div>{message.content}</div>
                 </div>
-                <div>{message.content}</div>
               </div>
             </div>
-          </div>
-        );
+          );
+        } else {
+          messageContent = (
+            <div
+              key={message._id}
+              className="pl-[52px] text-sm transition-all hover:bg-zinc-800 p-1"
+            >
+              {message.content}
+            </div>
+          );
+        }
 
         acc.push(messageContent);
         return acc;

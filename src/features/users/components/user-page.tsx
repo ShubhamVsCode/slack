@@ -22,11 +22,12 @@ const UserPage = ({ userId }: { userId: Id<"users"> }) => {
     <div className="flex flex-col h-screen flex-1">
       <UserHeader
         name={user?.name || ""}
-        status={user?.status || ""}
+        // status={user?.status || ""}
         onClick={() => setOpen((prev) => !prev)}
       />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 flex flex-col">
+          {/* @ts-ignore */}
           <MessageList messages={messages || []} />
           <UserProfile userId={userId} open={open} setOpen={setOpen} />
           <MessageInput

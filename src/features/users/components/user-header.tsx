@@ -4,13 +4,13 @@ import React from "react";
 
 interface UserHeaderProps {
   name: string;
-  status: string;
+  // status: string;
   onClick: () => void;
 }
 
 export const UserHeader: React.FC<UserHeaderProps> = ({
   name,
-  status,
+  // status,
   onClick,
 }) => {
   return (
@@ -31,7 +31,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
             <div className="h-7 w-32 bg-gray-900 animate-pulse rounded"></div>
           )}
         </div>
-        <p className="text-sm text-gray-600">{status}</p>
+        {/* <p className="text-sm text-gray-600">{status}</p> */}
       </div>
     </div>
   );
