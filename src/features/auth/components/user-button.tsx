@@ -33,7 +33,7 @@ const UserButton = () => {
             </AvatarFallback>
           </Avatar>
           <span className="ml-2 text-sm font-medium">
-            {user?.name} {isAdmin && "(Admin)"}
+            {user?.name} {isAdmin && workspace?.createdBy && "(Admin)"}
           </span>
           <ChevronDown className="ml-auto h-4 w-4" />
         </div>

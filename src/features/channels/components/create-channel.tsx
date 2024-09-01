@@ -16,16 +16,21 @@ import { Id } from "../../../../convex/_generated/dataModel";
 import { toast } from "sonner";
 import { useGetWorkspaceId } from "@/features/workspaces/hooks/workspace";
 import { useRouter } from "next/navigation";
+import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
+import { useGetWorkspace } from "@/features/workspaces/api/actions";
 
 const CreateChannel = () => {
   const router = useRouter();
   const workspaceId = useGetWorkspaceId();
+  const workspace = useGetWorkspace({ workspaceId });
   const createChannel = useCreateChannel();
   const [open, setOpen] = useState(false);
   const [channelName, setChannelName] = useState("");
   const [channelType, setChannelType] = useState<"public" | "private">(
     "public",
   );
+
+  const user = useCurrentUser();
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -51,14 +56,16 @@ const CreateChannel = () => {
 
   return (
     <>
-      <Button
-        variant="ghost"
-        onClick={handleOpen}
-        className="w-full justify-start"
-      >
-        <Plus className="w-4 h-4 mr-2" />
-        Create Channel
-      </Button>
+      {workspace?.createdBy === user?._id && (
+        <Button
+          variant="ghost"
+          onClick={handleOpen}
+          className="w-full justify-start"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Create Channel
+        </Button>
+      )}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>

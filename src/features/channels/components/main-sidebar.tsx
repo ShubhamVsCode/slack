@@ -14,7 +14,9 @@ import {
   useGetWorkspaces,
 } from "@/features/workspaces/api/actions";
 import { useGetWorkspaceId } from "@/features/workspaces/hooks/workspace";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const MainSidebar = () => {
   const router = useRouter();
@@ -22,6 +24,10 @@ const MainSidebar = () => {
   const workspaceId = useGetWorkspaceId();
   const workspace = useGetWorkspace({ workspaceId });
   const channels = useGetChannels(workspaceId);
+  const channelId = useParams().channelId;
+  const members = workspace?.members;
+  const currentUser = useCurrentUser();
+
   const [currentChannel, setCurrentChannel] = useState<Doc<"channels"> | null>(
     null,
   );
@@ -53,7 +59,9 @@ const MainSidebar = () => {
               <Button
                 key={channel._id}
                 variant="ghost"
-                className="w-full justify-start mb-1"
+                className={cn("w-full justify-start mb-1", {
+                  "bg-zinc-700": channelId === channel._id,
+                })}
               >
                 <Hash className="mr-2 h-4 w-4" />
                 {channel.name}
@@ -63,15 +71,27 @@ const MainSidebar = () => {
           <CreateChannel />
           <Separator className="my-4" />
           <h2 className="text-sm font-semibold mb-2">Direct Messages</h2>
-          {directMessages.map((user) => (
-            <Button
-              key={user._id}
-              variant="ghost"
-              className="w-full justify-start mb-1"
-            >
-              <div className="w-2 h-2 rounded-full bg-green-500 mr-2" />
-              {user.name}
-            </Button>
+          {members?.map((user) => (
+            <Link href={`/workspace/${workspaceId}/${user._id}`} key={user._id}>
+              <Button
+                key={user._id}
+                variant="ghost"
+                className="w-full justify-start mb-1 flex items-center gap-2"
+              >
+                <Avatar
+                  className={cn("w-6 h-6 rounded-lg border-2", {
+                    // user.status === "online"
+                    "border-green-500": false,
+                  })}
+                >
+                  <AvatarImage src={user.image} alt={user.name} />
+                  <AvatarFallback className="uppercase rounded-lg">
+                    {user.name?.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                {user.name} {user._id === currentUser?._id && "(You)"}
+              </Button>
+            </Link>
           ))}
         </div>
       </ScrollArea>

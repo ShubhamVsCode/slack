@@ -57,7 +57,25 @@ export const getWorkspace = query({
         return null;
       }
 
-      return await ctx.db.get(args.workspaceId);
+      const workspace = await ctx.db.get(args.workspaceId);
+      const members = await ctx.db
+        .query("members")
+        .withIndex("by_workspace_id", (q) =>
+          q.eq("workspaceId", args.workspaceId),
+        )
+        .collect();
+      const userIds = members.map((member) => member.userId);
+
+      const users = [];
+
+      for (const userId of userIds) {
+        const user = await ctx.db.get(userId);
+        if (user) {
+          users.push(user);
+        }
+      }
+
+      return { ...workspace, members: users };
     } catch (error) {
       console.error("Error in getWorkspace:", error);
       return null;

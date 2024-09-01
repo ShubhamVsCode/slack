@@ -28,6 +28,17 @@ const messageTable = defineTable({
   channelId: v.id("channels"),
 });
 
+const directMessageTable = defineTable({
+  content: v.string(),
+  sender: v.id("users"),
+  recipient: v.id("users"),
+  workspaceId: v.id("workspaces"),
+  timestamp: v.number(),
+  read: v.boolean(),
+})
+  .index("by_workspace_and_users", ["workspaceId", "sender", "recipient"])
+  .index("by_timestamp", ["timestamp"]);
+
 const memberTable = defineTable({
   userId: v.id("users"),
   workspaceId: v.id("workspaces"),
@@ -43,6 +54,7 @@ const schema = defineSchema({
   members: memberTable,
   channels: channelTable,
   messages: messageTable,
+  directMessages: directMessageTable,
 });
 
 export default schema;

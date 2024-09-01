@@ -28,7 +28,7 @@ const Sidebar = () => {
           <div className="flex h-20 items-center justify-center">
             <DropdownMenuTrigger>
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-neutral-200 text-2xl font-bold text-neutral-500 dark:bg-neutral-800">
-                {workspace?.name[0]}
+                {workspace?.name?.[0]}
               </div>
             </DropdownMenuTrigger>
           </div>
@@ -39,7 +39,7 @@ const Sidebar = () => {
               <Link href={`/workspace/${workspace._id}`} key={workspace._id}>
                 <DropdownMenuItem className="group w-full flex items-center gap-2 cursor-pointer">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-neutral-200 group-hover:bg-neutral-700 text-2xl font-bold text-neutral-500 dark:bg-neutral-800 dark:text-neutral-500">
-                    {workspace?.name[0]}
+                    {workspace?.name?.[0]}
                   </div>
                   {workspace.name}
                 </DropdownMenuItem>
