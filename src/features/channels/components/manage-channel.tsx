@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -47,6 +47,7 @@ const ManageChannel = ({
   const workspace = useGetWorkspace({ workspaceId });
   const channel = useGetChannel(channelId);
   const [inviteMemberEmail, setInviteMemberEmail] = useState("");
+  const [inviteLink, setInviteLink] = useState("");
 
   const handleLeaveChannel = () => {
     setOpen(false);
@@ -57,9 +58,7 @@ const ManageChannel = ({
   };
 
   const handleInviteMember = async () => {
-    const inviteLink = `${window.location.origin}?workspaceId=${workspaceId}&joinCode=${workspace?.joinCode}`;
     try {
-      console.log(inviteLink);
       //   const inviteMemberResponse = await sendInviteMemberEmail(
       //     inviteMemberEmail,
       //     workspace?.name || "",
@@ -71,6 +70,17 @@ const ManageChannel = ({
       toast.error(error.message);
     }
   };
+
+  const handleCopyInviteLink = () => {
+    navigator.clipboard.writeText(inviteLink);
+    toast.success("Invite link copied to clipboard");
+  };
+
+  useEffect(() => {
+    setInviteLink(
+      `${window.location.origin}?workspaceId=${workspaceId}&joinCode=${workspace?.joinCode}`,
+    );
+  }, [workspaceId, workspace?.joinCode]);
 
   if (!channel) return null;
 
@@ -140,7 +150,7 @@ const ManageChannel = ({
                     <Button onClick={handleInviteMember}>Invite Member</Button>
                   </div>
 
-                  <ul>
+                  <ul className="flex flex-col gap-2">
                     {channel.members?.map((member) => (
                       <li
                         key={member?._id}
@@ -156,6 +166,12 @@ const ManageChannel = ({
                       </li>
                     ))}
                   </ul>
+                  <div className="flex flex-col gap-2 my-2">
+                    <Input value={inviteLink} readOnly className="flex-1" />
+                    <Button onClick={handleCopyInviteLink}>
+                      Copy Invite Link
+                    </Button>
+                  </div>
                 </div>
               </div>
             </TabsContent>
