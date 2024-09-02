@@ -4,11 +4,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import dayjs from "dayjs";
 import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
 import { ScrollArea } from "@/components/ui/scroll-area";
-// import { MessageContent } from "@/features/channels/components/message-list";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
 import MessageEditor from "@/features/channels/components/message-input";
 import { useDeleteDirectMessage, useEditDirectMessage } from "../api/actions";
+import DeleteConfirmDialog from "./message-delete-dialog";
+import { toast } from "sonner";
 
 interface Message {
   sender: {
@@ -41,9 +42,23 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
     useState<Id<"directMessages"> | null>(null);
   const [hoveredMessageId, setHoveredMessageId] =
     useState<Id<"directMessages"> | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteMessage, setDeleteMessage] = useState<Message | null>(null);
 
   const editDirectMessage = useEditDirectMessage();
   const deleteDirectMessage = useDeleteDirectMessage();
+
+  const toggleEditing = (messageId: Id<"directMessages">) => {
+    setEditing(!editing);
+    setEditingMessageId(editing ? null : messageId);
+  };
+
+  const toggleDelete = (messageId: Id<"directMessages">) => {
+    setIsDeleteDialogOpen(!isDeleteDialogOpen);
+    const messageToDelete =
+      messages.find((message) => message._id === messageId) || null;
+    setDeleteMessage(messageToDelete);
+  };
 
   const onEditMessage = (messageId: Id<"directMessages">, content: string) => {
     setEditingMessageId(messageId);
@@ -51,9 +66,18 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
     setEditing(true);
   };
 
-  const onDeleteMessage = (messageId: Id<"directMessages">) => {
-    setEditingMessageId(null);
-    setEditing(false);
+  const onDeleteMessage = async (messageId: Id<"directMessages">) => {
+    const deletedMessage = await deleteDirectMessage({
+      directMessageId: messageId,
+    });
+
+    setIsDeleteDialogOpen(false);
+    setDeleteMessage(null);
+    if (deletedMessage) {
+      toast.success("Message deleted");
+    } else {
+      toast.error("Failed to delete message");
+    }
   };
 
   const scrollToBottom = () => {
@@ -77,7 +101,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
         <Edit className="h-4 w-4" />
       </Button>
       <Button
-        onClick={() => onDeleteMessage(messageId)}
+        onClick={() => toggleDelete(messageId)}
         variant="ghost"
         size="icon"
         className="h-5 w-5"
@@ -86,11 +110,6 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
       </Button>
     </div>
   );
-
-  const toggleEditing = (messageId: Id<"directMessages">) => {
-    setEditing(!editing);
-    setEditingMessageId(editing ? null : messageId);
-  };
 
   const renderMessageContent = (
     message: Message,
@@ -109,6 +128,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
       <MessageContent
         content={message.content}
         isEdited={!!message.editedAt}
+        isDeleted={!!message.deletedAt}
         messageId={message._id}
         onEditMessage={onEditMessage}
         editing={editing}
@@ -117,6 +137,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
       />
       {hoveredMessageId === message._id &&
         message.sender._id === currentUserId &&
+        !message.deletedAt &&
         renderMessageActions(message._id)}
     </div>
   );
@@ -159,21 +180,33 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
         return acc;
       }, [] as React.ReactNode[])}
       <div ref={messagesEndRef} />
+      {deleteMessage && !deleteMessage.deletedAt && (
+        <DeleteConfirmDialog
+          content={deleteMessage.content}
+          messageId={deleteMessage._id}
+          isEdited={!!deleteMessage.editedAt}
+          isOpen={isDeleteDialogOpen}
+          onClose={() => setIsDeleteDialogOpen(false)}
+          onConfirm={() => onDeleteMessage(deleteMessage._id)}
+        />
+      )}
     </ScrollArea>
   );
 };
 
 export const MessageContent: React.FC<{
   content: string;
-  isEdited: boolean;
+  isEdited?: boolean;
+  isDeleted?: boolean;
   messageId: Id<"directMessages">;
-  onEditMessage: (messageId: Id<"directMessages">, content: string) => void;
-  editing: boolean;
-  setEditing: (editing: boolean) => void;
-  editingMessageId: Id<"directMessages"> | null;
+  onEditMessage?: (messageId: Id<"directMessages">, content: string) => void;
+  editing?: boolean;
+  setEditing?: (editing: boolean) => void;
+  editingMessageId?: Id<"directMessages"> | null;
 }> = ({
   content,
   isEdited,
+  isDeleted,
   messageId,
   onEditMessage,
   editing,
@@ -184,21 +217,23 @@ export const MessageContent: React.FC<{
     <MessageEditor
       initialContent={content}
       onSend={(content) => {
-        onEditMessage(messageId, content);
-        setEditing(false);
+        onEditMessage && onEditMessage(messageId, content);
+        setEditing && setEditing(false);
       }}
       isEditing
       onCancel={() => {
-        setEditing(false);
+        setEditing && setEditing(false);
       }}
     />
   ) : (
     <div className="flex items-end space-x-1">
       <div
         dangerouslySetInnerHTML={{
-          __html: isEdited
-            ? content + ' <span class="text-xs text-gray-500">(edited)</span>'
-            : content,
+          __html: isDeleted
+            ? '<span class="text-xs font-semibold italic text-gray-500">This message was deleted by the author</span>'
+            : isEdited
+              ? content + ' <span class="text-xs text-gray-500">(edited)</span>'
+              : content,
         }}
         className="prose dark:prose-invert prose-sm max-w-none prose-p:m-0 prose-ul:m-0 prose-ol:m-0 prose-li:m-0 prose-blockquote:m-0 prose-a:text-blue-400 prose-a:text-sm prose-a:font-medium prose-a:no-underline prose-a:hover:underline"
       />

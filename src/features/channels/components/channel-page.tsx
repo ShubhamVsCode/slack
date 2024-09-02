@@ -17,8 +17,6 @@ const ChannelPage = ({ channelId }: { channelId: Id<"channels"> }) => {
   const channel = useGetChannel(channelId);
   const messages = useGetMessages(channelId);
   const sendMessage = useSendMessage();
-  const editMessage = useEditMessage();
-  const deleteMessage = useDeleteMessage();
   const [open, setOpen] = useState(false);
 
   return (
@@ -30,13 +28,7 @@ const ChannelPage = ({ channelId }: { channelId: Id<"channels"> }) => {
       />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 flex flex-col">
-          <MessageList
-            messages={messages || []}
-            onEditMessage={(messageId, text) =>
-              editMessage({ messageId, text })
-            }
-            onDeleteMessage={(messageId) => deleteMessage({ messageId })}
-          />
+          <MessageList messages={messages || []} />
           <ManageChannel channelId={channelId} open={open} setOpen={setOpen} />
           <MessageEditor onSend={(text) => sendMessage({ channelId, text })} />
         </div>
