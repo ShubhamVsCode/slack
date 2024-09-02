@@ -97,7 +97,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
     isCurrentUser: boolean,
     isSameUser: boolean,
   ) => (
-    <div className="text-sm">
+    <div className="w-full text-sm">
       {!isSameUser && (
         <div className="font-semibold text-gray-500">
           {isCurrentUser ? "You" : message.sender.name}{" "}

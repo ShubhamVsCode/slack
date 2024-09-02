@@ -123,7 +123,12 @@ const MessageEditor = ({
   };
 
   return (
-    <div className="border bg-background rounded-lg shadow-sm mx-2 mb-2">
+    <div
+      className={cn(
+        "border bg-background rounded-lg shadow-sm",
+        isEditing ? "" : "mx-2 mb-2",
+      )}
+    >
       <EditorProvider
         slotBefore={<MenuBar />}
         extensions={extensions}
@@ -140,6 +145,7 @@ const MessageEditor = ({
         }}
         onCreate={({ editor }) => setEditor(editor)}
         onDestroy={() => setEditor(null)}
+        immediatelyRender={false}
       >
         <div className="relative">
           {isEditing ? (
