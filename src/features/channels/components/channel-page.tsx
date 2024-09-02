@@ -19,10 +19,15 @@ const ChannelPage = ({ channelId }: { channelId: Id<"channels"> }) => {
   const sendMessage = useSendMessage();
   const [open, setOpen] = useState(false);
 
+  if (!channel) return null;
+
+  const channelName = channel?.name || "";
+  const placeholder = `Message #${channelName}`;
+
   return (
     <div className="flex flex-col h-screen flex-1">
       <ChannelHeader
-        name={channel?.name || ""}
+        name={channelName}
         description={channel?.description || ""}
         onClick={() => setOpen((prev) => !prev)}
       />
@@ -30,7 +35,10 @@ const ChannelPage = ({ channelId }: { channelId: Id<"channels"> }) => {
         <div className="flex-1 flex flex-col">
           <MessageList messages={messages || []} />
           <ManageChannel channelId={channelId} open={open} setOpen={setOpen} />
-          <MessageEditor onSend={(text) => sendMessage({ channelId, text })} />
+          <MessageEditor
+            onSend={(text) => sendMessage({ channelId, text })}
+            placeholder={placeholder}
+          />
         </div>
       </div>
     </div>

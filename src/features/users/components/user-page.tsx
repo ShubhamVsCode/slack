@@ -19,6 +19,10 @@ const UserPage = ({ userId }: { userId: Id<"users"> }) => {
   const sendMessage = useSendDirectMessage();
   const [open, setOpen] = useState(false);
 
+  if (!user) return null;
+
+  const userName = user?.name || "";
+
   return (
     <div className="flex flex-col h-screen flex-1">
       <UserHeader
@@ -40,6 +44,7 @@ const UserPage = ({ userId }: { userId: Id<"users"> }) => {
                 content: text,
               })
             }
+            placeholder={`Message ${userName}`}
           />
         </div>
       </div>

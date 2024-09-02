@@ -29,3 +29,11 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(167, 167, 167, 0.2) transparent;
 }
+
+.tiptap p.is-editor-empty:first-child::before {
+  color: #777;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}

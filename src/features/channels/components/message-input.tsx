@@ -4,8 +4,14 @@ import { Color } from "@tiptap/extension-color";
 import ListItem from "@tiptap/extension-list-item";
 import TextStyle from "@tiptap/extension-text-style";
 import Link from "@tiptap/extension-link";
-import { Editor, EditorProvider, useCurrentEditor } from "@tiptap/react";
+import {
+  Editor,
+  EditorProvider,
+  Extension,
+  useCurrentEditor,
+} from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import Placeholder from "@tiptap/extension-placeholder";
 import {
   Bold,
   Italic,
@@ -18,7 +24,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 const MenuBar = () => {
   const { editor } = useCurrentEditor();
@@ -73,54 +79,69 @@ const MenuBar = () => {
   );
 };
 
-const extensions = [
-  Color.configure({ types: [TextStyle.name, ListItem.name] }),
-  TextStyle.configure({
-    // types: [ListItem.name],
-  }),
-  Link.configure({
-    openOnClick: false,
-    autolink: true,
-    defaultProtocol: "https",
-  }),
-  StarterKit.configure({
-    bulletList: {
-      keepMarks: true,
-      keepAttributes: false,
-    },
-    orderedList: {
-      keepMarks: true,
-      keepAttributes: false,
-    },
-  }),
-];
-
 const MessageEditor = ({
   onSend,
   initialContent,
   isEditing,
   onCancel,
+  placeholder = "Message...",
 }: {
   onSend: (content: string) => void;
   initialContent?: string;
   isEditing?: boolean;
   onCancel?: () => void;
+  placeholder?: string;
 }) => {
   const [content, setContent] = useState(initialContent || "");
   const [hasText, setHasText] = useState(false);
-  const [editor, setEditor] = useState<Editor | null>(null);
+  const editorRef = useRef<Editor>();
 
   const handleSend = () => {
-    if (editor?.isEmpty) {
+    if (editorRef.current?.isEmpty) {
       return;
     }
-    onSend(content);
-    if (editor) {
-      editor.commands.clearContent();
+    onSend(editorRef.current?.getHTML() || "");
+    if (editorRef.current) {
+      editorRef.current.commands.clearContent();
     }
     setContent("");
     setHasText(false);
   };
+
+  const addKeyboardShortcuts = () => {
+    return {
+      Enter: () => {
+        if (editorRef.current) {
+          if (editorRef.current?.isEmpty) {
+            return false;
+          }
+          handleSend();
+          return true;
+        }
+
+        return false;
+      },
+    };
+  };
+
+  const extensions: Extension[] = [
+    Color.configure({ types: [TextStyle.name, ListItem.name] }),
+    Placeholder.configure({
+      placeholder,
+    }),
+    StarterKit.configure({
+      bulletList: {
+        keepMarks: true,
+        keepAttributes: false,
+      },
+      orderedList: {
+        keepMarks: true,
+        keepAttributes: false,
+      },
+    }).extend({
+      addKeyboardShortcuts,
+    }),
+  ];
 
   return (
     <div
@@ -143,8 +164,9 @@ const MessageEditor = ({
           setContent(editor.getHTML());
           setHasText(!editor.isEmpty);
         }}
-        onCreate={({ editor }) => setEditor(editor)}
-        onDestroy={() => setEditor(null)}
+        onCreate={(props) => {
+          editorRef.current = props.editor;
+        }}
         immediatelyRender={false}
       >
         <div className="relative">
@@ -162,8 +184,8 @@ const MessageEditor = ({
               </Button>
               <Button
                 onClick={() => {
-                  if (editor) {
-                    editor.commands.clearContent();
+                  if (editorRef.current) {
+                    editorRef.current.commands.clearContent();
                   }
                   setContent("");
                   setHasText(false);
