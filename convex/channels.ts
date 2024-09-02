@@ -122,8 +122,12 @@ export const getMessages = query({
     const messagesWithUserDetails = await Promise.all(
       messages.map(async (message) => {
         const user = await ctx.db.get(message.createdBy);
+        const fileUrls = await Promise.all(
+          message.files?.map((file) => ctx.storage.getUrl(file)) || [],
+        );
         return {
           ...message,
+          fileUrls,
           createdBy: {
             id: message.createdBy,
             name: user?.name || "Unknown User",
@@ -140,6 +144,7 @@ export const sendMessage = mutation({
   args: {
     channelId: v.id("channels"),
     text: v.string(),
+    files: v.optional(v.array(v.id("_storage"))),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -147,7 +152,7 @@ export const sendMessage = mutation({
       throw new ConvexError("Not authenticated");
     }
 
-    const { channelId, text } = args;
+    const { channelId, text, files } = args;
     if (!text) {
       return null;
     }
@@ -156,6 +161,7 @@ export const sendMessage = mutation({
       content: text,
       createdBy: userId,
       type: "text",
+      files: files || [],
     });
     return message;
   },

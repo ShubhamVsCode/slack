@@ -53,3 +53,13 @@ export const useUpdateOnlineStatus = () => {
   const updateOnlineStatus = useMutation(api.users.updateOnlineStatus);
   return updateOnlineStatus;
 };
+
+export const useGenerateUploadUrl = () => {
+  const generateUploadUrl = useMutation(api.upload.generateUploadUrl);
+  return generateUploadUrl;
+};
+
+export const useGetFileUrl = () => {
+  const getFileUrl = useMutation(api.upload.getFileUrl);
+  return getFileUrl;
+};

@@ -5,11 +5,18 @@ import dayjs from "dayjs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
-import { useDeleteMessage, useEditMessage } from "../api/actions";
+import {
+  useDeleteMessage,
+  useEditMessage,
+  useGetFileUrl,
+} from "../api/actions";
 import MessageEditor from "./message-input";
 import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
 import DeleteConfirmDialog from "./message-delete-dialog";
 import { toast } from "sonner";
+import Image from "next/image";
+import MessageImagesDialog from "./message-images-dialog";
+import { CarouselApi } from "@/components/ui/carousel";
 
 interface Message {
   createdBy: {
@@ -23,6 +30,8 @@ interface Message {
   content: string;
   editedAt?: number | undefined;
   deletedAt?: number | undefined;
+  files?: Id<"_storage">[];
+  fileUrls?: string[];
   channelId: Id<"channels">;
 }
 
@@ -76,6 +85,13 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
     setDeletingMessage(null);
   };
 
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
+  const [selectedMessageFileUrls, setSelectedMessageFileUrls] = useState<
+    string[]
+  >([]);
+
   const renderMessageContent = (message: Message) => (
     <div
       className="relative group"
@@ -92,6 +108,25 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
         setEditing={setEditingMessage}
         editingMessageId={editingMessageId}
       />
+      {message.fileUrls && message.fileUrls.length > 0 && (
+        <div className="flex gap-2 flex-wrap">
+          {message.fileUrls?.map((fileUrl) => (
+            <Image
+              width={400}
+              height={200}
+              src={fileUrl}
+              alt={fileUrl}
+              key={fileUrl}
+              className="rounded-md w-auto h-[200px] object-contain"
+              onClick={() => {
+                setSelectedMessageFileUrls(message.fileUrls || []);
+                setIsDialogOpen(true);
+                setCurrentImageIndex(message.fileUrls?.indexOf(fileUrl) || 0);
+              }}
+            />
+          ))}
+        </div>
+      )}
       {hoveredMessageId === message._id &&
         message.createdBy.id === user?._id &&
         !message.deletedAt && (
@@ -176,6 +211,12 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
           onConfirm={() => onDeleteMessage(deletingMessage._id)}
         />
       )}
+      <MessageImagesDialog
+        fileUrls={selectedMessageFileUrls || []}
+        isDialogOpen={isDialogOpen}
+        setIsDialogOpen={setIsDialogOpen}
+        setCarouselApi={setCarouselApi}
+      />
     </ScrollArea>
   );
 };

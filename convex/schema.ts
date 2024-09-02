@@ -28,6 +28,7 @@ const messageTable = defineTable({
   channelId: v.id("channels"),
   editedAt: v.optional(v.number()),
   deletedAt: v.optional(v.number()),
+  files: v.optional(v.array(v.id("_storage"))),
 });
 
 const directMessageTable = defineTable({

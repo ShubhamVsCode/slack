@@ -18,6 +18,7 @@ import type * as auth from "../auth.js";
 import type * as channels from "../channels.js";
 import type * as dms from "../dms.js";
 import type * as http from "../http.js";
+import type * as upload from "../upload.js";
 import type * as users from "../users.js";
 import type * as workspaces from "../workspaces.js";
 
@@ -34,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   channels: typeof channels;
   dms: typeof dms;
   http: typeof http;
+  upload: typeof upload;
   users: typeof users;
   workspaces: typeof workspaces;
 }>;

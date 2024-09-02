@@ -3,7 +3,6 @@ import "./message-input.css";
 import { Color } from "@tiptap/extension-color";
 import ListItem from "@tiptap/extension-list-item";
 import TextStyle from "@tiptap/extension-text-style";
-import Link from "@tiptap/extension-link";
 import {
   Editor,
   EditorProvider,
@@ -12,6 +11,8 @@ import {
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
+import Image from "@tiptap/extension-image";
+import FileHandler from "@tiptap-pro/extension-file-handler";
 import {
   Bold,
   Italic,
@@ -19,12 +20,25 @@ import {
   Code,
   List,
   ListOrdered,
-  Send,
   SendHorizontal,
   X,
+  Loader,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useCallback, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import NextImage from "next/image";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from "@/components/ui/carousel";
+import { useGenerateUploadUrl, useGetFileUrl } from "../api/actions";
+import { Id } from "../../../../convex/_generated/dataModel";
+import MessageImagesDialog from "./message-images-dialog";
 
 const MenuBar = () => {
   const { editor } = useCurrentEditor();
@@ -86,7 +100,7 @@ const MessageEditor = ({
   onCancel,
   placeholder = "Message...",
 }: {
-  onSend: (content: string) => void;
+  onSend: (content: string, files: Id<"_storage">[]) => void;
   initialContent?: string;
   isEditing?: boolean;
   onCancel?: () => void;
@@ -94,16 +108,55 @@ const MessageEditor = ({
 }) => {
   const [content, setContent] = useState(initialContent || "");
   const [hasText, setHasText] = useState(false);
+  const [files, setFiles] = useState<
+    {
+      file: File;
+      previewUrl: string;
+      uploading: boolean;
+      url?: string;
+      storageId?: string;
+    }[]
+  >([]);
+  const filesWithUrls = files
+    .filter((file) => file.url || file.previewUrl)
+    .map((file) => file.url || file.previewUrl);
   const editorRef = useRef<Editor>();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
+
+  const generateUploadUrl = useGenerateUploadUrl();
+  const getFileUrl = useGetFileUrl();
+
+  const uploadFile = async (file: File) => {
+    const postUrl = await generateUploadUrl();
+    const result = await fetch(postUrl, {
+      method: "POST",
+      headers: { "Content-Type": file.type },
+      body: file,
+    });
+    const { storageId } = await result.json();
+    const url = await getFileUrl({ storageId });
+
+    return { url, storageId };
+  };
 
   const handleSend = () => {
     if (editorRef.current?.isEmpty) {
       return;
     }
-    onSend(editorRef.current?.getHTML() || "");
+    const storageIds = files
+      .filter((f) => !!f.storageId)
+      .map((f) => f.storageId as Id<"_storage">);
+
+    console.log(storageIds);
+
+    onSend(editorRef.current?.getHTML() || "", storageIds);
+
     if (editorRef.current) {
       editorRef.current.commands.clearContent();
     }
+    setFiles([]);
     setContent("");
     setHasText(false);
   };
@@ -141,7 +194,83 @@ const MessageEditor = ({
     }).extend({
       addKeyboardShortcuts,
     }),
+    FileHandler.configure({
+      allowedMimeTypes: ["image/png", "image/jpeg", "image/gif", "image/webp"],
+      onDrop: (currentEditor, files, pos) => {
+        files.forEach((file) => {
+          const fileReader = new FileReader();
+
+          fileReader.readAsDataURL(file);
+          fileReader.onload = () => {
+            const previewUrl = fileReader.result;
+            // Show preview
+            setFiles((prevFiles) => [
+              ...prevFiles,
+              { file, previewUrl: previewUrl as string, uploading: true },
+            ]);
+
+            // Start uploading
+            uploadFile(file).then(({ url: uploadedUrl, storageId }) => {
+              if (uploadedUrl) {
+                setFiles((prevFiles) =>
+                  prevFiles.map((f) =>
+                    f.file === file
+                      ? { ...f, uploading: false, url: uploadedUrl, storageId }
+                      : f,
+                  ),
+                );
+              }
+            });
+          };
+        });
+      },
+      onPaste: (currentEditor, files, htmlContent) => {
+        files.forEach((file) => {
+          if (htmlContent) {
+            console.log(htmlContent); // eslint-disable-line no-console
+            return false;
+          }
+
+          const fileReader = new FileReader();
+
+          fileReader.readAsDataURL(file);
+          fileReader.onload = () => {
+            const previewUrl = fileReader.result as string;
+            // Show preview
+            setFiles((prevFiles) => [
+              ...prevFiles,
+              { file, previewUrl, uploading: true },
+            ]);
+
+            // Start uploading
+            uploadFile(file).then(({ url: uploadedUrl, storageId }) => {
+              if (uploadedUrl) {
+                setFiles((prevFiles) =>
+                  prevFiles.map((f) =>
+                    f.file === file
+                      ? { ...f, uploading: false, url: uploadedUrl, storageId }
+                      : f,
+                  ),
+                );
+              }
+            });
+          };
+        });
+      },
+    }),
   ];
+
+  const openDialog = (index: number) => {
+    setCurrentImageIndex(index);
+    setIsDialogOpen(true);
+  };
+
+  useEffect(() => {
+    if (!carouselApi) {
+      return;
+    }
+    carouselApi.scrollTo(currentImageIndex);
+  }, [carouselApi, currentImageIndex]);
 
   return (
     <div
@@ -153,6 +282,7 @@ const MessageEditor = ({
       <EditorProvider
         slotBefore={<MenuBar />}
         extensions={extensions}
+        autofocus
         content={content}
         editorProps={{
           attributes: {
@@ -170,6 +300,37 @@ const MessageEditor = ({
         immediatelyRender={false}
       >
         <div className="relative">
+          <div className="flex flex-wrap gap-2 mx-2 mb-2">
+            {files.map((file, index) => (
+              <div key={index} className="relative group w-16 h-16">
+                <NextImage
+                  src={file.url || file.previewUrl}
+                  alt="preview"
+                  width={100}
+                  height={100}
+                  className="w-16 h-16 object-cover rounded-xl cursor-pointer"
+                  onClick={() => openDialog(index)}
+                />
+                {file.uploading && (
+                  <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-blue-500 bg-opacity-50 rounded-xl">
+                    <Loader className="animate-spin" />
+                  </div>
+                )}
+                <Button
+                  onClick={() => {
+                    setFiles((prevFiles) =>
+                      prevFiles.filter((f) => f !== file),
+                    );
+                  }}
+                  size={"icon"}
+                  variant={"secondary"}
+                  className="absolute group-hover:opacity-100 opacity-0 -top-2 -right-2 rounded-full h-4 w-4"
+                >
+                  <X size={10} />
+                </Button>
+              </div>
+            ))}
+          </div>
           {isEditing ? (
             <>
               <Button
@@ -210,6 +371,12 @@ const MessageEditor = ({
               <SendHorizontal size={18} />
             </Button>
           )}
+          <MessageImagesDialog
+            fileUrls={filesWithUrls}
+            isDialogOpen={isDialogOpen}
+            setIsDialogOpen={setIsDialogOpen}
+            setCarouselApi={setCarouselApi}
+          />
         </div>
       </EditorProvider>
     </div>
