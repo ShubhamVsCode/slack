@@ -26,6 +26,7 @@ const ChannelPage = ({ channelId }: { channelId: Id<"channels"> }) => {
       />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 flex flex-col">
+          {/* @ts-ignore */}
           <MessageList messages={messages || []} />
           <ManageChannel channelId={channelId} open={open} setOpen={setOpen} />
           <MessageEditor
